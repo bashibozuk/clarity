@@ -1,0 +1,18 @@
+<h4>Asynchronous, pre-loading 1 level ahead</h4>
+<p></p>
+<div class="clr-example">
+  <clr-tree [clrLazy]="true">
+    <clr-tree-node
+      [(clrExpanded)]="node.expanded"
+      *clrRecursiveFor="let node of tree.root; getChildren: getChildren"
+      clrDroppable
+      (clrDrop)="onDrop($event, node)"
+      [clrDraggable]="node"
+      [clrDragStartDelay]="200"
+    >
+      <div class="node-item-wrapper">
+        {{node.label}}
+      </div>
+    </clr-tree-node>
+  </clr-tree>
+</div>

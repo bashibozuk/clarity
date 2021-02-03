@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 VMware, Inc. All Rights Reserved.
+ * Copyright (c) 2016-2021 VMware, Inc. All Rights Reserved.
  * This software is released under MIT license.
  * The full license information can be found in LICENSE in the root directory of this project.
  */
@@ -59,10 +59,35 @@ export class DragEventListenerService<T> {
   public ghostElement?: any;
   public dropPointPosition?: DragPointPosition;
 
+  private inKeyboardDragMode: boolean = false;
+
   public attachDragListeners(draggableEl: Node) {
     this.draggableEl = draggableEl;
     this.listeners.push(this.customDragEvent(this.draggableEl, 'mousedown', 'mousemove', 'mouseup'));
     this.listeners.push(this.customDragEvent(this.draggableEl, 'touchstart', 'touchmove', 'touchend'));
+    this.listeners.push(this.attachKeyListeners(this.draggableEl));
+  }
+
+  public attachKeyListeners(draggableEl: Node) {
+    return this.renderer.listen(draggableEl, 'keydown', (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || this.hasDragStarted) {
+        console.log('not interested in those keys', e);
+        return;
+      }
+
+      if (this.inKeyboardDragMode) {
+        this.broadcast(e, DragEventType.DRAG_END);
+        this.inKeyboardDragMode = false;
+        this.initialPosition = null;
+      } else {
+        this.broadcast(e, DragEventType.DRAG_START);
+        this.inKeyboardDragMode = true;
+        this.initialPosition = {
+          pageX: this.getNativeEventObject(e).pageX,
+          pageY: this.getNativeEventObject(e).pageY,
+        };
+      }
+    });
   }
 
   public detachDragListeners() {
@@ -84,7 +109,7 @@ export class DragEventListenerService<T> {
     }
   }
 
-  private getNativeEventObject(event: MouseEvent | TouchEvent): any {
+  private getNativeEventObject(event: MouseEvent | TouchEvent | KeyboardEvent): any {
     if ((event as TouchEvent).hasOwnProperty('changedTouches')) {
       return (event as TouchEvent).changedTouches[0];
     } else {
@@ -93,7 +118,13 @@ export class DragEventListenerService<T> {
   }
 
   private customDragEvent(element: Node, startOnEvent: string, moveOnEvent: string, endOnEvent: string): () => void {
-    return this.renderer.listen(element, startOnEvent, (startEvent: MouseEvent | TouchEvent) => {
+    console.log(startOnEvent);
+    return this.renderer.listen(element, startOnEvent, (startEvent: MouseEvent | TouchEvent | KeyboardEvent) => {
+      if (startEvent instanceof KeyboardEvent && startEvent.code !== 'Space') {
+        return;
+      }
+
+      console.log(startEvent);
       // save the initial point to initialPosition
       // this will be used to calculate how far the draggable has been dragged from its initial position
       this.initialPosition = {
@@ -115,17 +146,18 @@ export class DragEventListenerService<T> {
       // Listen to mousemove/touchmove events outside of angular zone.
       this.ngZone.runOutsideAngular(() => {
         // During the drag start delay, pointer should stay within the boundary.
-        this.checkDragStartBoundary(moveOnEvent);
+        console.log('before');
 
+        this.checkDragStartBoundary(moveOnEvent);
+        console.log('after');
         this.dragStartDelayTimeout = setTimeout(() => {
           if (this.checkDragStartBoundaryListener) {
             this.checkDragStartBoundaryListener();
           }
-
+          console.log('after 1');
           this.hasDragStarted = true;
           // Fire "dragstart"
           this.broadcast(startEvent, DragEventType.DRAG_START);
-
           this.nestedListeners.push(
             this.renderer.listen('document', moveOnEvent, (moveEvent: MouseEvent | TouchEvent) => {
               // Event.stopImmediatePropagation() is needed here to prevent nested draggables from getting dragged
@@ -151,6 +183,7 @@ export class DragEventListenerService<T> {
       // Listen to mouseup/touchend events.
       this.nestedListeners.push(
         this.renderer.listen('document', endOnEvent, (endEvent: MouseEvent | TouchEvent) => {
+          console.log(endOnEvent);
           if (this.hasDragStarted) {
             // Fire "dragend" only if dragstart is registered
             this.hasDragStarted = false;
@@ -158,7 +191,7 @@ export class DragEventListenerService<T> {
           }
 
           clearTimeout(this.dragStartDelayTimeout);
-
+          console.log('clearTimeout(this.dragStartDelayTimeout); 1');
           // We must remove the the nested listeners every time drag completes.
           this.nestedListeners.map(event => event());
 
@@ -175,7 +208,7 @@ export class DragEventListenerService<T> {
     this.checkDragStartBoundaryListener = this.renderer.listen(
       'document',
       eventType,
-      (moveEvent: MouseEvent | TouchEvent) => {
+      (moveEvent: MouseEvent | TouchEvent | KeyboardEvent) => {
         const deltaX = Math.abs(this.getNativeEventObject(moveEvent).pageX - this.initialPosition.pageX);
         const deltaY = Math.abs(this.getNativeEventObject(moveEvent).pageY - this.initialPosition.pageY);
 
@@ -183,6 +216,7 @@ export class DragEventListenerService<T> {
         // we should cancel drag initiation.
         if (deltaX > 1 || deltaY > 1) {
           clearTimeout(this.dragStartDelayTimeout);
+          console.log('clearTimeout(this.dragStartDelayTimeout 2);');
           if (this.checkDragStartBoundaryListener) {
             this.checkDragStartBoundaryListener();
           }
@@ -191,9 +225,9 @@ export class DragEventListenerService<T> {
     );
   }
 
-  private broadcast(event: MouseEvent | TouchEvent, eventType: DragEventType): void {
+  private broadcast(event: MouseEvent | TouchEvent | KeyboardEvent, eventType: DragEventType): void {
     const dragEvent: DragEventInterface<T> = this.generateDragEvent(event, eventType);
-
+    console.log(dragEvent);
     switch (dragEvent.type) {
       case DragEventType.DRAG_START:
         this.dragStart.next(dragEvent);
@@ -215,7 +249,10 @@ export class DragEventListenerService<T> {
     this.eventBus.broadcast(dragEvent);
   }
 
-  private generateDragEvent(event: MouseEvent | TouchEvent, eventType: DragEventType): DragEventInterface<T> {
+  private generateDragEvent(
+    event: MouseEvent | TouchEvent | KeyboardEvent,
+    eventType: DragEventType
+  ): DragEventInterface<T> {
     const nativeEvent: any = this.getNativeEventObject(event);
 
     return {

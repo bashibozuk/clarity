@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 VMware, Inc. All Rights Reserved.
+ * Copyright (c) 2016-2021 VMware, Inc. All Rights Reserved.
  * This software is released under MIT license.
  * The full license information can be found in LICENSE in the root directory of this project.
  */
@@ -18,6 +18,7 @@ import { ROUTING } from './drag-and-drop.demo.routing';
 import { DraggableHandleDemo } from './draggable-handle.demo';
 import { DropToleranceDemo } from './drop-tolerance.demo';
 import { GroupingDemo } from './grouping.demo';
+import { TreeAccessibilityDemo } from './tree-accessibility.demo';
 
 @NgModule({
   imports: [CommonModule, ClarityModule, FormsModule, ROUTING],
@@ -30,6 +31,7 @@ import { GroupingDemo } from './grouping.demo';
     BasicDroppableDemo,
     DropToleranceDemo,
     GroupingDemo,
+    TreeAccessibilityDemo,
   ],
   exports: [
     DragAndDropDemo,
