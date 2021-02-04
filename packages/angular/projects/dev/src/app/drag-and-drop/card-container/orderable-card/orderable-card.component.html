@@ -1,0 +1,24 @@
+<ng-template #clrOrderableCard>
+  <div
+    clrDroppable
+    [class.draggable-over]="clrCardContainerService.isDraggableOver(order)"
+    (clrDrop)="clrCardContainerService.onDragDrop(order)"
+    (clrDragMove)="onDragMove()"
+  >
+    <div
+      clrDraggable
+      tabindex="0"
+      class="clr-orderable-card"
+      [class.clr-orderable-selected-card]="clrCardContainerService.isSelectedCard(order)"
+      (clrDragMove)="clrCardContainerService.onDragMove($event)"
+      (clrDragStart)="clrCardContainerService.onDragStart(order)"
+      (keyup.enter)="clrCardContainerService.onKeyEnter($event, order)"
+      (keyup.esc)="clrCardContainerService.onKeyEsc($event)"
+      (keyup.arrowleft)="clrCardContainerService.onArrowKeys($event, arrowKeyDirection.LEFT)"
+      (keyup.arrowright)="clrCardContainerService.onArrowKeys($event, arrowKeyDirection.RIGHT)"
+    >
+      <clr-icon class="drag-handle-icon" shape="drag-handle" size="32"></clr-icon>
+      <ng-content></ng-content>
+    </div>
+  </div>
+</ng-template>

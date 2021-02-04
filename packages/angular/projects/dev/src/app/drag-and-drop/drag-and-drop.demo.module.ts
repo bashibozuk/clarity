@@ -19,6 +19,11 @@ import { DraggableHandleDemo } from './draggable-handle.demo';
 import { DropToleranceDemo } from './drop-tolerance.demo';
 import { GroupingDemo } from './grouping.demo';
 import { TreeAccessibilityDemo } from './tree-accessibility.demo';
+import { CardAccessibilityDemo } from './card-accessibility.demo';
+
+import { ClrCardContainer } from './card-container/card-container.component';
+import { ClrCardContainerCard } from './card-container/orderable-card/orderable-card.component';
+import { ClrCardContainerService } from './card-container/card-container.service';
 
 @NgModule({
   imports: [CommonModule, ClarityModule, FormsModule, ROUTING],
@@ -32,7 +37,11 @@ import { TreeAccessibilityDemo } from './tree-accessibility.demo';
     DropToleranceDemo,
     GroupingDemo,
     TreeAccessibilityDemo,
+    ClrCardContainer,
+    ClrCardContainerCard,
+    CardAccessibilityDemo,
   ],
+  providers: [ClrCardContainerService],
   exports: [
     DragAndDropDemo,
     DraggableHandleDemo,

@@ -15,13 +15,14 @@ import { DraggableHandleDemo } from './draggable-handle.demo';
 import { DropToleranceDemo } from './drop-tolerance.demo';
 import { GroupingDemo } from './grouping.demo';
 import { TreeAccessibilityDemo } from './tree-accessibility.demo';
+import { CardAccessibilityDemo } from './card-accessibility.demo';
 
 const ROUTES: Routes = [
   {
     path: '',
     component: DragAndDropDemo,
     children: [
-      { path: '', redirectTo: 'draggable', pathMatch: 'full' },
+      { path: '', redirectTo: 'tree-accessibility', pathMatch: 'full' },
       { path: 'draggable', component: BasicDraggableDemo },
       { path: 'draggable-handle', component: DraggableHandleDemo },
       { path: 'custom-ghost', component: CustomGhostDemo },
@@ -30,6 +31,7 @@ const ROUTES: Routes = [
       { path: 'drop-tolerance', component: DropToleranceDemo },
       { path: 'grouping', component: GroupingDemo },
       { path: 'tree-accessibility', component: TreeAccessibilityDemo },
+      { path: 'card-accessibility', component: CardAccessibilityDemo },
     ],
   },
 ];
