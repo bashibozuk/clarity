@@ -4,7 +4,7 @@ import { QueryList, ViewContainerRef, Injectable, EmbeddedViewRef } from '@angul
 import { ArrowKeyDirection, CardInfo } from './card-container.interface';
 import { ClrCardContainerCard } from './orderable-card/orderable-card.component';
 import { Observable } from 'rxjs';
-import { ClrDragEvent } from '@clr/angular';
+import { ClrDragEvent, ClrAriaLiveService } from '@clr/angular';
 
 const SCROLL_SPEED = 5;
 const SCROLL_THRESHOLD = 10;
@@ -22,7 +22,7 @@ export class ClrCardContainerService {
   private a11yDragOrder: number = -1;
   private a11yDropOrder: number = -1;
 
-  constructor() {}
+  constructor(private ariaLiveService: ClrAriaLiveService) {}
 
   /**
    * initialize card container service by passing
@@ -125,10 +125,14 @@ export class ClrCardContainerService {
 
     if (this.a11yMode) {
       this.moveCard(this.a11yDragOrder, this.a11yDropOrder);
+      const message = `Your card is re-ordered to new position`;
+      this.ariaLiveService.announce(message);
       this.getOutOfA11yMode();
     } else {
       this.a11yDragOrder = cardOrder;
       this.a11yMode = true;
+      const message = `You have selected card with order ${cardOrder} to re-order card use arrow keys to select new position and press enter again to move card at new position`;
+      this.ariaLiveService.announce(message);
     }
   }
 
@@ -166,6 +170,9 @@ export class ClrCardContainerService {
           this.a11yDropOrder = 0;
         }
       }
+
+      const message = `You have selected new position ${this.a11yDropOrder} to re-order card, press return key to move card here`;
+      this.ariaLiveService.announce(message);
 
       //TODO: fetch this element from events once available in next version of Clarity
       const dropPlaceholderCard = this.cardContainerCards.filter(
